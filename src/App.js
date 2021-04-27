@@ -109,20 +109,20 @@ function App() {
           </tr>
         </thead>
         <tbody>
-          {transactions.map((transaction) => {
+          {transactions.map(({ id, date, name, category, type, amount }) => {
             return (
-              <tr key={transaction.id}>
-                <TableCell>{transaction.date}</TableCell>
-                <TableCell>{transaction.name}</TableCell>
-                <TableCell>{transaction.category}</TableCell>
+              <tr key={id}>
+                <TableCell>{date}</TableCell>
+                <TableCell>{name}</TableCell>
+                <TableCell>{category}</TableCell>
                 <TableCell>
-                  <Amount type={transaction.type}>{transaction.amount}</Amount>
+                  <Amount type={type}>{amount}</Amount>
                 </TableCell>
                 <TableCell>
                   <EditIcon style={{ marginRight: "16px" }} />
                   <DeleteForeverIcon
                     style={{ color: "#FF7661" }}
-                    onClick={() => handleDelete(transaction.id)}
+                    onClick={() => handleDelete(id)}
                   />
                 </TableCell>
               </tr>
