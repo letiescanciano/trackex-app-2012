@@ -1,136 +1,58 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
+import React from "react";
+import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import "./App.css";
 import { NavBar } from "./components/NavBar";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import EditIcon from "@material-ui/icons/Edit";
-const data = [
-  {
-    id: 0,
-    date: "22/04/2021",
-    name: "Coffee",
-    category: "eating_out",
-    amount: 4.5,
-    type: "expense",
-  },
-  {
-    id: 1,
-    date: "22/04/2021",
-    name: "Coffee",
-    category: "eating_out",
-    amount: 4.5,
-    type: "expense",
-  },
-  {
-    id: 2,
-    date: "22/04/2021",
+import { TransactionsList } from "./components/Transactions/List";
 
-    name: "April payroll",
-    category: "salary",
-    amount: 4500,
-    type: "income",
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: "#FF7661",
+      contrastText: "#fff",
+    },
+    text: {
+      primary: "#fff",
+    },
   },
-  {
-    id: 3,
-    date: "22/04/2021",
-
-    name: "Coffee",
-    category: "eating_out",
-    amount: 4.5,
-    type: "expense",
+  overrides: {
+    MuiInputLabel: {
+      root: { color: "#fff", fontWeight: "normal" },
+    },
+    MuiInput: {
+      underline: {
+        "&:before": {
+          borderBottom: "1px solid #FF7661",
+        },
+        "&:hover": {
+          borderBottom: "1px solid #FF7661",
+        },
+      },
+    },
+    MuiFormLabel: {
+      root: {
+        color: "#fff",
+        fontWeight: 600,
+        paddingBottom: "16px",
+      },
+    },
+    MuiRadio: {
+      root: {
+        color: "#fff",
+      },
+    },
+    MuiIconButton: {
+      label: { color: "#FF7661" },
+    },
   },
-  {
-    id: 4,
-    date: "22/04/2021",
-    name: "Coffee",
-    category: "eating_out",
-    amount: 4.5,
-    type: "expense",
-  },
-  {
-    id: 5,
-    date: "22/04/2021",
-    name: "Coffee",
-    category: "eating_out",
-    amount: 4.5,
-    type: "expense",
-  },
-];
-
-const Table = styled.table`
-  width: 80%;
-  text-align: left;
-  padding: 64px;
-`;
-const HeadCell = styled.td`
-  padding: 16px 0;
-  width: 20%;
-`;
-
-const TableCell = styled.td`
-  padding: 8px 0;
-  width: 20%;
-`;
-
-const Amount = styled.p`
-  color: ${({ type }) => (type === "expense" ? "#FF7661" : "#00E4C6")};
-`;
-
+});
 function App() {
-  const [transactions, setTransactions] = useState([]);
-
-  useEffect(() => {
-    //our code
-    //common actions
-    //fetching data from an API
-    setTransactions(data);
-    console.log("transactcions (state)", transactions);
-  }, []);
-
-  const handleDelete = (id) => {
-    console.log("deleting row", id);
-    const _transactions = [...transactions].filter(
-      (transaction) => transaction.id !== id
-    );
-    setTransactions(_transactions);
-    console.log("transactcions (state)", transactions);
-  };
   return (
-    <div className='layout'>
-      <NavBar />
-      <Table>
-        <thead>
-          <tr>
-            <HeadCell>Date</HeadCell>
-            <HeadCell>Name</HeadCell>
-            <HeadCell>Category</HeadCell>
-            <HeadCell>Amount</HeadCell>
-            <HeadCell></HeadCell>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map(({ id, date, name, category, type, amount }) => {
-            return (
-              <tr key={id}>
-                <TableCell>{date}</TableCell>
-                <TableCell>{name}</TableCell>
-                <TableCell>{category}</TableCell>
-                <TableCell>
-                  <Amount type={type}>{amount}</Amount>
-                </TableCell>
-                <TableCell>
-                  <EditIcon style={{ marginRight: "16px" }} />
-                  <DeleteForeverIcon
-                    style={{ color: "#FF7661" }}
-                    onClick={() => handleDelete(id)}
-                  />
-                </TableCell>
-              </tr>
-            );
-          })}
-        </tbody>
-      </Table>
-    </div>
+    <MuiThemeProvider theme={theme}>
+      <div className='layout'>
+        <NavBar />
+        <TransactionsList />
+      </div>
+    </MuiThemeProvider>
   );
 }
 
