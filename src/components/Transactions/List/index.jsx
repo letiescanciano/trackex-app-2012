@@ -6,6 +6,11 @@ import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
 import EditIcon from "@material-ui/icons/Edit";
 import Button from "@material-ui/core/Button";
 
+import Input from "@material-ui/core/Input";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import FormControl from "@material-ui/core/FormControl";
+import SearchIcon from "@material-ui/icons/Search";
+
 import data from "./data.js";
 
 import { TransactionDrawer } from "../../Drawer";
@@ -38,9 +43,9 @@ const Container = styled.div`
   padding: 64px;
 `;
 
-const AddButtonWrapper = styled.div`
+const ActionsWrapper = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
 `;
 
 const AVAILABLE_MODES = {
@@ -54,12 +59,23 @@ const TransactionsList = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedTransaction, setSelectedTransaction] = useState({});
+  const [search, setSearch] = useState("");
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   useEffect(() => {
     setTimeout(() => {
       setTransactions(data);
     }, 2000);
   }, []);
+
+  useEffect(() => {
+    setFilteredTransactions(transactions);
+  }, [transactions]);
+
+  useEffect(() => {
+    console.log("useEffect search", search);
+    filterByName(search);
+  }, [search]);
 
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -109,9 +125,34 @@ const TransactionsList = () => {
     setTransactions(_transactions);
   };
 
+  const filterByName = (search) => {
+    console.log("filterByName search", search);
+
+    const _filteredTransactions = transactions.filter((transaction) => {
+      return transaction.name.toLowerCase().includes(search.toLowerCase());
+    });
+
+    setFilteredTransactions(_filteredTransactions);
+  };
+
   return (
     <Container>
-      <AddButtonWrapper>
+      <ActionsWrapper>
+        <FormControl style={{ width: "75%" }}>
+          <Input
+            id='search'
+            value={search}
+            startAdornment={
+              <InputAdornment position='start'>
+                <SearchIcon />
+              </InputAdornment>
+            }
+            onChange={(event) => {
+              console.log(event.target.value);
+              setSearch(event.target.value);
+            }}
+          />
+        </FormControl>
         <Button
           variant='contained'
           color='primary'
@@ -119,7 +160,7 @@ const TransactionsList = () => {
         >
           + Add Transaction
         </Button>
-      </AddButtonWrapper>
+      </ActionsWrapper>
       {transactions.length > 0 ? (
         <Table>
           <thead>
@@ -132,30 +173,32 @@ const TransactionsList = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.map(({ id, date, name, category, type, amount }) => {
-              return (
-                <tr key={id}>
-                  <TableCell>{date}</TableCell>
-                  <TableCell>{name}</TableCell>
-                  <TableCell>{category}</TableCell>
-                  <TableCell>
-                    <Amount type={type}>{formatter.format(amount)}</Amount>
-                  </TableCell>
-                  <TableCell>
-                    <EditIcon
-                      style={{ marginRight: "16px" }}
-                      onClick={() => {
-                        handleEdit(id);
-                      }}
-                    />
-                    <DeleteForeverIcon
-                      style={{ color: "#FF7661" }}
-                      onClick={() => handleDelete(id)}
-                    />
-                  </TableCell>
-                </tr>
-              );
-            })}
+            {filteredTransactions.map(
+              ({ id, date, name, category, type, amount }) => {
+                return (
+                  <tr key={id}>
+                    <TableCell>{date}</TableCell>
+                    <TableCell>{name}</TableCell>
+                    <TableCell>{category}</TableCell>
+                    <TableCell>
+                      <Amount type={type}>{formatter.format(amount)}</Amount>
+                    </TableCell>
+                    <TableCell>
+                      <EditIcon
+                        style={{ marginRight: "16px" }}
+                        onClick={() => {
+                          handleEdit(id);
+                        }}
+                      />
+                      <DeleteForeverIcon
+                        style={{ color: "#FF7661" }}
+                        onClick={() => handleDelete(id)}
+                      />
+                    </TableCell>
+                  </tr>
+                );
+              }
+            )}
           </tbody>
         </Table>
       ) : (
