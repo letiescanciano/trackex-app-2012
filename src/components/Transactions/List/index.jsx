@@ -10,12 +10,14 @@ import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import FormControl from "@material-ui/core/FormControl";
 import SearchIcon from "@material-ui/icons/Search";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Checkbox from "@material-ui/core/Checkbox";
 
 import data from "./data.js";
 
 import { TransactionDrawer } from "../../Drawer";
 const Table = styled.table`
-  width: 100%;
+  width: 80%;
   text-align: left;
   padding: 16px 0;
 `;
@@ -48,12 +50,34 @@ const ActionsWrapper = styled.div`
   justify-content: space-between;
 `;
 
+const Main = styled.div`
+  width: 100%;
+  display: flex;
+  padding-top: 32px;
+`;
+const FiltersContainer = styled.div`
+  width: 20%;
+`;
+
 const AVAILABLE_MODES = {
   add: "add",
   edit: "edit",
   read: "read",
 };
 
+const availableCategories = [
+  { value: "eating_out", label: "Eating out" },
+  { value: "clothes", label: "Clothes" },
+  { value: "electronics", label: "Electronics" },
+  { value: "groceries", label: "Groceries" },
+  { value: "other", label: "Other" },
+  { value: "salary", label: "Salary" },
+];
+
+const availableTypes = [
+  { value: "expense", label: "Expense" },
+  { value: "income", label: "Income" },
+];
 const TransactionsList = () => {
   const [transactions, setTransactions] = useState([]);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -62,6 +86,23 @@ const TransactionsList = () => {
   const [search, setSearch] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
+  const [categories, setCategories] = useState(
+    availableCategories.reduce((acc, category) => {
+      acc[category.value] = { label: category.label, checked: false };
+      return acc;
+    }, {})
+  );
+
+  // {
+  //   eating_out: { label: 'label1', checked: true},
+  //   clothes: { label: 'label1', checked: true},
+  // }
+  const [types, setTypes] = useState(
+    availableTypes.reduce((acc, type) => {
+      acc[type.value] = { label: type.label, checked: false };
+      return acc;
+    }, {})
+  );
   useEffect(() => {
     setTimeout(() => {
       setTransactions(data);
@@ -161,50 +202,108 @@ const TransactionsList = () => {
           + Add Transaction
         </Button>
       </ActionsWrapper>
-      {transactions.length > 0 ? (
-        <Table>
-          <thead>
-            <tr>
-              <HeadCell>Date</HeadCell>
-              <HeadCell>Name</HeadCell>
-              <HeadCell>Category</HeadCell>
-              <HeadCell>Amount</HeadCell>
-              <HeadCell></HeadCell>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map(
-              ({ id, date, name, category, type, amount }) => {
-                return (
-                  <tr key={id}>
-                    <TableCell>{date}</TableCell>
-                    <TableCell>{name}</TableCell>
-                    <TableCell>{category}</TableCell>
-                    <TableCell>
-                      <Amount type={type}>{formatter.format(amount)}</Amount>
-                    </TableCell>
-                    <TableCell>
-                      <EditIcon
-                        style={{ marginRight: "16px" }}
-                        onClick={() => {
-                          handleEdit(id);
-                        }}
-                      />
-                      <DeleteForeverIcon
-                        style={{ color: "#FF7661" }}
-                        onClick={() => handleDelete(id)}
-                      />
-                    </TableCell>
-                  </tr>
-                );
-              }
-            )}
-          </tbody>
-        </Table>
-      ) : (
-        "Loading...."
-      )}
-
+      <Main>
+        <FiltersContainer>
+          <h2>Filters</h2>
+          <h3>Category</h3>
+          {categories &&
+            Object.keys(categories).map((category) => {
+              return (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={categories[category].checked}
+                      onChange={(event) => {
+                        const newCategoriesState = {
+                          ...categories, // make a copy of all the categories
+                          [category]: {
+                            //label: categories[category].label,
+                            ...categories[category], // we keep all the information of that category
+                            checked: event.target.checked, // we update the "checked" property
+                          },
+                        };
+                        console.log("newCategoriesState", newCategoriesState);
+                        setCategories(newCategoriesState);
+                      }}
+                      name={category}
+                    />
+                  }
+                  label={categories[category].label}
+                />
+              );
+            })}
+          <h3>Types</h3>
+          {types &&
+            Object.keys(types).map((type) => {
+              return (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={types[type].checked}
+                      onChange={(event) => {
+                        const newTypesState = {
+                          ...types, // make a copy of all the Types
+                          [type]: {
+                            //label: Types[type].label,
+                            ...types[type], // we keep all the information of that type
+                            checked: event.target.checked, // we update the "checked" property
+                          },
+                        };
+                        console.log("newTypesState", newTypesState);
+                        setTypes(newTypesState);
+                      }}
+                      name={type}
+                    />
+                  }
+                  label={types[type].label}
+                />
+              );
+            })}
+        </FiltersContainer>
+        {transactions.length > 0 ? (
+          <Table>
+            <thead>
+              <tr>
+                <HeadCell>Date</HeadCell>
+                <HeadCell>Name</HeadCell>
+                <HeadCell>Category</HeadCell>
+                <HeadCell>Amount</HeadCell>
+                <HeadCell></HeadCell>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredTransactions.map(
+                ({ id, date, name, category, type, amount }) => {
+                  return (
+                    <tr key={id}>
+                      <TableCell>{date}</TableCell>
+                      <TableCell>{name}</TableCell>
+                      <TableCell>{category}</TableCell>
+                      <TableCell>
+                        <Amount type={type}>{formatter.format(amount)}</Amount>
+                      </TableCell>
+                      <TableCell>
+                        <EditIcon
+                          style={{ marginRight: "16px" }}
+                          onClick={() => {
+                            handleEdit(id);
+                          }}
+                        />
+                        <DeleteForeverIcon
+                          style={{ color: "#FF7661" }}
+                          onClick={() => handleDelete(id)}
+                        />
+                      </TableCell>
+                    </tr>
+                  );
+                }
+              )}
+            </tbody>
+          </Table>
+        ) : (
+          "Loading...."
+        )}
+      </Main>
       {openDrawer && (
         <TransactionDrawer
           mode={mode}
