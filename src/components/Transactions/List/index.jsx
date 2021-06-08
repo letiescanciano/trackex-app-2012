@@ -118,6 +118,15 @@ const TransactionsList = () => {
     filterByName(search);
   }, [search]);
 
+  useEffect(() => {
+    console.log("useEffect categories", categories);
+    filterByCategory();
+  }, [categories]);
+
+  useEffect(() => {
+    console.log("useEffect types", types);
+    filterByType();
+  }, [types]);
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -176,6 +185,50 @@ const TransactionsList = () => {
     setFilteredTransactions(_filteredTransactions);
   };
 
+  const filterByCategory = () => {
+    // we filter in our categories state object
+
+    // const checked = Object.keys(categories).filter(category=>{
+    //   return categories[category].checked === true
+    // })
+    const checked = Object.keys(categories).filter(
+      (category) => categories[category].checked
+    );
+
+    // if no checkbox is selected --> original array
+    // if some checkbox is checked --> filter
+
+    if (checked.length === 0) {
+      // console.log("go back to original array");
+      setFilteredTransactions(transactions);
+    } else {
+      const _filteredTransactions = transactions.filter((transaction) => {
+        return categories[transaction.category].checked === true;
+      });
+      setFilteredTransactions(_filteredTransactions);
+      // console.log("_filteredTransactions", _filteredTransactions);
+    }
+  };
+
+  const filterByType = () => {
+    // we filter in our types state object
+    const checked = Object.keys(types).filter((type) => types[type].checked);
+
+    // if no checkbox is selected --> original array
+    // if some checkbox is checked --> filter
+
+    if (checked.length === 0) {
+      // console.log("go back to original array");
+      setFilteredTransactions(transactions);
+    } else {
+      const _filteredTransactions = transactions.filter((transaction) => {
+        return types[transaction.type].checked === true;
+      });
+      setFilteredTransactions(_filteredTransactions);
+      // console.log("_filteredTransactions", _filteredTransactions);
+    }
+  };
+
   return (
     <Container>
       <ActionsWrapper>
@@ -222,7 +275,7 @@ const TransactionsList = () => {
                             checked: event.target.checked, // we update the "checked" property
                           },
                         };
-                        console.log("newCategoriesState", newCategoriesState);
+                        // console.log("newCategoriesState", newCategoriesState);
                         setCategories(newCategoriesState);
                       }}
                       name={category}
