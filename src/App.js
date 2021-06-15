@@ -4,6 +4,8 @@ import "./App.css";
 import { NavBar } from "./components/NavBar";
 import { TransactionsList } from "./components/Transactions/List";
 
+import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -45,14 +47,22 @@ const theme = createMuiTheme({
     },
   },
 });
+
+const client = new ApolloClient({
+  uri: "http://localhost:1337/graphql",
+  cache: new InMemoryCache(),
+});
+
 function App() {
   return (
-    <MuiThemeProvider theme={theme}>
-      <div className='layout'>
-        <NavBar />
-        <TransactionsList />
-      </div>
-    </MuiThemeProvider>
+    <ApolloProvider client={client}>
+      <MuiThemeProvider theme={theme}>
+        <div className='layout'>
+          <NavBar />
+          <TransactionsList />
+        </div>
+      </MuiThemeProvider>
+    </ApolloProvider>
   );
 }
 

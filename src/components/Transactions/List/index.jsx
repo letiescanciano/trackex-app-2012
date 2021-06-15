@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { toDate } from "date-fns";
 import styled from "styled-components";
 
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
@@ -13,7 +13,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Checkbox from "@material-ui/core/Checkbox";
 
-import data from "./data.js";
+import { transactionsAPI } from "../../../services/transactions";
 
 import { TransactionDrawer } from "../../Drawer";
 const Table = styled.table`
@@ -59,26 +59,45 @@ const FiltersContainer = styled.div`
   width: 20%;
 `;
 
-const AVAILABLE_MODES = {
-  add: "add",
-  edit: "edit",
-  read: "read",
-};
-
 const availableCategories = [
-  { value: "eating_out", label: "Eating out" },
-  { value: "clothes", label: "Clothes" },
-  { value: "electronics", label: "Electronics" },
-  { value: "groceries", label: "Groceries" },
-  { value: "other", label: "Other" },
-  { value: "salary", label: "Salary" },
+  { value: "eating_out", label: "Eating out", id: 1 },
+  { value: "clothes", label: "Clothes", id: 2 },
+  { value: "electronics", label: "Electronics", id: 3 },
+  { value: "groceries", label: "Groceries", id: 4 },
+  { value: "salary", label: "Salary", id: 5 },
 ];
 
 const availableTypes = [
-  { value: "expense", label: "Expense" },
-  { value: "income", label: "Income" },
+  { value: "expense", label: "Expense", id: 1 },
+  { value: "income", label: "Income", id: 2 },
 ];
+
+// const TRANSACTIONS_LIST_QUERY = gql`
+//   query {
+//     transactions {
+//       id
+//       name
+//       amount
+//       date
+//       category {
+//         id
+//         label
+//         value
+//       }
+//       type {
+//         id
+//         label
+//         value
+//       }
+//     }
+//   }
+// `;
 const TransactionsList = () => {
+  // const { loading, error, data } = useQuery(TRANSACTIONS_LIST_QUERY);
+  // console.log("data", data);
+  // console.log("loading", loading);
+  // console.log("error", error);
+
   const [transactions, setTransactions] = useState([]);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [mode, setMode] = useState("add");
@@ -103,10 +122,19 @@ const TransactionsList = () => {
       return acc;
     }, {})
   );
+
   useEffect(() => {
-    setTimeout(() => {
-      setTransactions(data);
-    }, 2000);
+    const getTransactions = async () => {
+      try {
+        const { data, status } = await transactionsAPI.all();
+        if (status === 200) {
+          setTransactions(data);
+        }
+      } catch (e) {
+        console.log("err in read all", e);
+      }
+    };
+    getTransactions();
   }, []);
 
   useEffect(() => {
@@ -114,17 +142,14 @@ const TransactionsList = () => {
   }, [transactions]);
 
   useEffect(() => {
-    console.log("useEffect search", search);
     filterByName(search);
   }, [search]);
 
   useEffect(() => {
-    console.log("useEffect categories", categories);
     filterByCategory();
   }, [categories]);
 
   useEffect(() => {
-    console.log("useEffect types", types);
     filterByType();
   }, [types]);
   const formatter = new Intl.NumberFormat("en-US", {
@@ -133,11 +158,20 @@ const TransactionsList = () => {
     minimumFractionDigits: 2,
   });
 
-  const handleDelete = (id) => {
-    const _transactions = [...transactions].filter(
-      (transaction) => transaction.id !== id
-    );
-    setTransactions(_transactions);
+  const handleDelete = async (id) => {
+    try {
+      const { data, status } = await transactionsAPI.delete(id);
+      console.log("data", data);
+      console.log("status", status);
+      if (status === 200) {
+        const _transactions = [...transactions].filter(
+          (transaction) => transaction.id !== id
+        );
+        setTransactions(_transactions);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const handleEdit = (id) => {
@@ -154,9 +188,26 @@ const TransactionsList = () => {
     // 4. open the drawer and fill out the form with the transaction data
     setOpenDrawer(true);
   };
-  const addTransactionToList = (data) => {
-    console.log("Data", data);
-    setTransactions([...transactions, { ...data }]);
+  const addTransactionToList = async (transaction) => {
+    const newTransaction = {
+      ...transaction,
+      category: availableCategories.find(
+        (cat) => cat.value === transaction.category
+      )?.id,
+      type: availableTypes.find((cat) => cat.value === transaction.type)?.id,
+    };
+    console.log(newTransaction);
+
+    try {
+      const { data, status } = await transactionsAPI.create(newTransaction);
+      // console.log("status", status);
+      console.log("data", data);
+      if (status === 200) {
+        setTransactions([...transactions, { ...data }]);
+      }
+    } catch (err) {
+      console.log("err in addTransaction", err);
+    }
   };
 
   const editTransaction = (data) => {
@@ -176,8 +227,6 @@ const TransactionsList = () => {
   };
 
   const filterByName = (search) => {
-    console.log("filterByName search", search);
-
     const _filteredTransactions = transactions.filter((transaction) => {
       return transaction.name.toLowerCase().includes(search.toLowerCase());
     });
@@ -331,9 +380,11 @@ const TransactionsList = () => {
                     <tr key={id}>
                       <TableCell>{date}</TableCell>
                       <TableCell>{name}</TableCell>
-                      <TableCell>{category}</TableCell>
+                      <TableCell>{category.value}</TableCell>
                       <TableCell>
-                        <Amount type={type}>{formatter.format(amount)}</Amount>
+                        <Amount type={type.value}>
+                          {formatter.format(amount)}
+                        </Amount>
                       </TableCell>
                       <TableCell>
                         <EditIcon

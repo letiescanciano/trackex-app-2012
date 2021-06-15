@@ -55,14 +55,8 @@ const types = [
 
 const TransactionDrawer = (props) => {
   console.log("TransactionDrawer props", props);
-  const {
-    mode,
-    open,
-    onClose,
-    transaction,
-    addTransaction,
-    editTransaction,
-  } = props;
+  const { mode, open, onClose, transaction, addTransaction, editTransaction } =
+    props;
   const emptyFormInitialValues = {
     name: "",
     date: "",
@@ -86,7 +80,6 @@ const TransactionDrawer = (props) => {
           initialValues={mode === "add" ? emptyFormInitialValues : transaction}
           validationSchema={transactionSchema}
           onSubmit={(values, { setSubmitting }) => {
-            console.log("Values onSubmit", JSON.stringify(values));
             mode === "add" ? addTransaction(values) : editTransaction(values);
             setSubmitting(false);
             onClose();
