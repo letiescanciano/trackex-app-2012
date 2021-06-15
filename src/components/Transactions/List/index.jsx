@@ -184,7 +184,11 @@ const TransactionsList = () => {
       return transaction.id === id;
     });
     // 3. I need to setSelectedTransaction to the one I found (save it in my state)
-    setSelectedTransaction(foundTransaction);
+    setSelectedTransaction({
+      ...foundTransaction,
+      type: foundTransaction.type.value,
+      category: foundTransaction.category.value,
+    });
     // 4. open the drawer and fill out the form with the transaction data
     setOpenDrawer(true);
   };
@@ -210,20 +214,38 @@ const TransactionsList = () => {
     }
   };
 
-  const editTransaction = (data) => {
-    // console.log("data", data);
-    // 1. Find the transaction index to edit in the array
-    const transactionIndex = transactions.findIndex(
-      (transaction) => transaction.id === data.id
-    );
-    // 2. Make a copy of our transactions state
-    const _transactions = [...transactions];
-    // 3. Replace the transaction that we need to edit
-    _transactions[transactionIndex] = data;
+  const editTransaction = async(transaction) => {
+    console.log("transaction", transaction);
+    const updatedTransaction = {
+      ...transaction,
+      category: availableCategories.find(
+        (cat) => cat.value === transaction.category
+      )?.id,
+      type: availableTypes.find((cat) => cat.value === transaction.type)?.id,
+    };
+    console.log("updatedTransaction", updatedTransaction);
 
-    // console.log("_transactions", _transactions);
-    // 4. Update our transactions (state) array
-    setTransactions(_transactions);
+    try {
+      const { data, status } = await transactionsAPI.update(updatedTransaction);
+      console.log("data", data);
+      console.log("status", status);
+      if (status === 200) {
+        // 1. Find the transaction index to edit in the array
+        const transactionIndex = transactions.findIndex(
+          (tr) => tr.id === transaction.id
+        );
+        // 2. Make a copy of our transactions state
+        const _transactions = [...transactions];
+        // 3. Replace the transaction that we need to edit
+        _transactions[transactionIndex] = data;
+
+        // console.log("_transactions", _transactions);
+        // 4. Update our transactions (state) array
+        setTransactions(_transactions);
+      }
+    } catch (e) {
+      console.log("e", e);
+    }
   };
 
   const filterByName = (search) => {
