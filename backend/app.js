@@ -12,7 +12,7 @@ db.defaults({ transactions: [] }).write();
 app.use(express.json()); // for parsing application/json
 app.get("/transactions", (req, res) => {
   const transactions = db.get("transactions").value();
-  //console.log("transactions", transactions);
+  console.log("transactions", transactions);
   res.status(200).send("<h1>hola</h1>");
 });
 
