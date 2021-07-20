@@ -701,22 +701,25 @@ const strapiData = [
 db.defaults({ transactions: [] }).write();
 
 strapiData.forEach((transaction) => {
-  // db.get("posts").insert({ title: "low!" }).write();
-  db.get("transactions")
-    .insert({
-      name: transaction.name,
-      date: transaction.date,
-      amount: transaction.amount,
-      category: {
-        value: transaction.category.value,
-        label: transaction.category.label,
-      },
-      type: {
-        value: transaction.type.value,
-        label: transaction.type.label,
-      },
-      created_at: new Date(),
-      updated_at: new Date(),
-    })
-    .write();
+  if (transaction.category.value && transaction.type.value) {
+    db.get("transactions")
+      .insert({
+        name: transaction.name,
+        date: transaction.date,
+        amount: transaction.amount,
+        category: {
+          id: transaction.category.id,
+          value: transaction.category.value,
+          label: transaction.category.label,
+        },
+        type: {
+          id: transaction.type.id,
+          value: transaction.type.value,
+          label: transaction.type.label,
+        },
+        created_at: new Date(),
+        updated_at: new Date(),
+      })
+      .write();
+  }
 });

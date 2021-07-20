@@ -16,6 +16,8 @@ import Checkbox from "@material-ui/core/Checkbox";
 import { transactionsAPI } from "../../../services/transactions";
 
 import { TransactionDrawer } from "../../Drawer";
+
+import { TrackexContext } from "../../../trackexContext";
 const Table = styled.table`
   width: 80%;
   text-align: left;
@@ -59,19 +61,6 @@ const FiltersContainer = styled.div`
   width: 20%;
 `;
 
-const availableCategories = [
-  { value: "eating_out", label: "Eating out", id: 1 },
-  { value: "clothes", label: "Clothes", id: 2 },
-  { value: "electronics", label: "Electronics", id: 3 },
-  { value: "groceries", label: "Groceries", id: 4 },
-  { value: "salary", label: "Salary", id: 5 },
-];
-
-const availableTypes = [
-  { value: "expense", label: "Expense", id: 1 },
-  { value: "income", label: "Income", id: 2 },
-];
-
 // const TRANSACTIONS_LIST_QUERY = gql`
 //   query {
 //     transactions {
@@ -105,8 +94,9 @@ const TransactionsList = () => {
   const [search, setSearch] = useState("");
   const [filteredTransactions, setFilteredTransactions] = useState([]);
 
+  const ctx = React.useContext(TrackexContext);
   const [categories, setCategories] = useState(
-    availableCategories.reduce((acc, category) => {
+    ctx.categories.reduce((acc, category) => {
       acc[category.value] = { label: category.label, checked: false };
       return acc;
     }, {})
@@ -117,7 +107,7 @@ const TransactionsList = () => {
   //   clothes: { label: 'label1', checked: true},
   // }
   const [types, setTypes] = useState(
-    availableTypes.reduce((acc, type) => {
+    ctx.types.reduce((acc, type) => {
       acc[type.value] = { label: type.label, checked: false };
       return acc;
     }, {})
@@ -195,10 +185,10 @@ const TransactionsList = () => {
   const addTransactionToList = async (transaction) => {
     const newTransaction = {
       ...transaction,
-      category: availableCategories.find(
+      category: ctx.categories.find(
         (cat) => cat.value === transaction.category
-      )?.id,
-      type: availableTypes.find((cat) => cat.value === transaction.type)?.id,
+      ),
+      type: ctx.types.find((cat) => cat.value === transaction.type),
     };
     console.log(newTransaction);
 
@@ -206,7 +196,7 @@ const TransactionsList = () => {
       const { data, status } = await transactionsAPI.create(newTransaction);
       // console.log("status", status);
       console.log("data", data);
-      if (status === 200) {
+      if (status === 201) {
         setTransactions([...transactions, { ...data }]);
       }
     } catch (err) {
@@ -214,14 +204,14 @@ const TransactionsList = () => {
     }
   };
 
-  const editTransaction = async(transaction) => {
+  const editTransaction = async (transaction) => {
     console.log("transaction", transaction);
     const updatedTransaction = {
       ...transaction,
-      category: availableCategories.find(
+      category: ctx.categories.find(
         (cat) => cat.value === transaction.category
-      )?.id,
-      type: availableTypes.find((cat) => cat.value === transaction.type)?.id,
+      ),
+      type: ctx.types.find((cat) => cat.value === transaction.type),
     };
     console.log("updatedTransaction", updatedTransaction);
 

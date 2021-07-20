@@ -3,8 +3,8 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import "./App.css";
 import { NavBar } from "./components/NavBar";
 import { TransactionsList } from "./components/Transactions/List";
-
-import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
+import { TrackexProvider } from "./trackexContext";
+// import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 
 const theme = createMuiTheme({
   palette: {
@@ -48,21 +48,21 @@ const theme = createMuiTheme({
   },
 });
 
-const client = new ApolloClient({
-  uri: "http://localhost:1337/graphql",
-  cache: new InMemoryCache(),
-});
+// const client = new ApolloClient({
+//   uri: "http://localhost:1337/graphql",
+//   cache: new InMemoryCache(),
+// });
 
 function App() {
   return (
-    <ApolloProvider client={client}>
+    <TrackexProvider>
       <MuiThemeProvider theme={theme}>
         <div className='layout'>
           <NavBar />
           <TransactionsList />
         </div>
       </MuiThemeProvider>
-    </ApolloProvider>
+    </TrackexProvider>
   );
 }
 

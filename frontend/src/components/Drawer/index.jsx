@@ -13,7 +13,7 @@ import styled from "styled-components";
 import * as Yup from "yup";
 import { Formik, Form } from "formik";
 import { Debug } from "../../aux/Debug";
-
+import { TrackexContext } from "../../trackexContext";
 const FormWrapper = styled.div`
   padding: 16px;
   width: 380px;
@@ -39,24 +39,13 @@ const ActionsWrapper = styled.div`
   justify-content: space-evenly;
 `;
 
-const categories = [
-  { value: "eating_out", label: "Eating out" },
-  { value: "clothes", label: "Clothes" },
-  { value: "electronics", label: "Electronics" },
-  { value: "groceries", label: "Groceries" },
-  { value: "other", label: "Other" },
-  { value: "salary", label: "Salary" },
-];
-
-const types = [
-  { value: "expense", label: "Expense" },
-  { value: "income", label: "Income" },
-];
-
 const TransactionDrawer = (props) => {
   console.log("TransactionDrawer props", props);
   const { mode, open, onClose, transaction, addTransaction, editTransaction } =
     props;
+
+  const { categories, types } = React.useContext(TrackexContext);
+
   const emptyFormInitialValues = {
     name: "",
     date: "",
