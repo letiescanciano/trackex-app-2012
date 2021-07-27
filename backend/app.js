@@ -6,6 +6,7 @@ const lodashId = require("lodash-id");
 const FileSync = require("lowdb/adapters/FileSync");
 const adapter = new FileSync("db.json");
 const db = low(adapter);
+const jwt = require("jsonwebtoken");
 
 db._.mixin(lodashId);
 db.defaults({ transactions: [] }).write();
@@ -75,4 +76,41 @@ app.delete("/transactions/:id", (req, res) => {
   }
 });
 
+const allUsers = [
+  {
+    username: "leti",
+    password: "leti1",
+  },
+  {
+    username: "eli",
+    password: "eli1",
+  },
+  {
+    username: "xani",
+    password: "xani1",
+  },
+];
+
+const accessTokenSecret = "trackexaccesstoken";
+const refreshTokenSecret = "trackexrefreshtoken";
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+
+  const user = allUsers.find(
+    (user) => user.username === username && user.password === password
+  );
+  if (user) {
+    //generate access token
+    const accessToken = jwt.sign({ username: username }, accessTokenSecret, {
+      expiresIn: "30m",
+    });
+    const refreshToken = jwt.sign({ username: username }, refreshTokenSecret);
+    console.log("accessToken", accessToken);
+    console.log("refreshToken", refreshToken);
+    res.status(200).json({ accessToken, refreshToken });
+  } else {
+    res.status(401).json("User not found");
+  }
+});
 app.listen(3001, () => console.log("Server listening on port 3001!"));

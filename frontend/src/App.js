@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import "./App.css";
 import { NavBar } from "./components/NavBar";
 import { TransactionsList } from "./components/Transactions/List";
 import { TrackexProvider } from "./trackexContext";
 // import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
-
+import { Login } from "./components/Auth/Login";
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -54,13 +54,19 @@ const theme = createMuiTheme({
 // });
 
 function App() {
+  const [currentUser, setCurrentUser] = useState(undefined);
+  console.log("currentUser", currentUser);
   return (
     <TrackexProvider>
       <MuiThemeProvider theme={theme}>
-        <div className='layout'>
-          <NavBar />
-          <TransactionsList />
-        </div>
+        {currentUser ? (
+          <div className='layout'>
+            <NavBar />
+            <TransactionsList />
+          </div>
+        ) : (
+          <Login setCurrentUser={setCurrentUser} />
+        )}
       </MuiThemeProvider>
     </TrackexProvider>
   );
