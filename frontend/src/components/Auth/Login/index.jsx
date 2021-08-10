@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 import logo from "../../NavBar/logo.svg";
 
@@ -7,10 +7,10 @@ import { Formik, Form } from "formik";
 import { Debug } from "../../../aux/Debug";
 import { TextField } from "@material-ui/core";
 import { Button } from "@material-ui/core";
-import { authAPI } from "../../../services/auth";
+import { AuthContext } from "../../../contexts/AuthContext";
 
 const userSchema = Yup.object().shape({
-  username: Yup.string().required("Required field"),
+  email: Yup.string().required("Required field"),
   password: Yup.string().required("Required field"),
 });
 
@@ -25,17 +25,26 @@ const Logo = styled.img`
   width: 150px;
 `;
 
-const Login = ({ setCurrentUser }) => {
+const Login = () => {
+  const { setUser, firebase } = useContext(AuthContext);
   const handleSubmit = async (values) => {
-    try {
-      const { status, data } = await authAPI.login(values);
-      console.log("response", data);
-      if (status === 200) {
-        setCurrentUser({ username: values.username, ...data });
-      }
-    } catch (e) {
-      console.log(e);
-    }
+    console.log("values", values);
+    const { email, password } = values;
+    firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        console.log(user);
+        setUser(user);
+      })
+      .catch((error) => {
+        console.log(error.message);
+
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
   };
   return (
     <Container>
@@ -43,9 +52,7 @@ const Login = ({ setCurrentUser }) => {
       <Formik
         initialValues={{}}
         validationSchema={userSchema}
-        onSubmit={(values) => {
-          handleSubmit(values);
-        }}
+        onSubmit={handleSubmit}
       >
         {({ isSubmitting, isValid, values, handleChange, touched, errors }) => {
           return (
@@ -54,13 +61,13 @@ const Login = ({ setCurrentUser }) => {
                 <TextField
                   style={{ marginBottom: "16px" }}
                   fullWidth
-                  id='username'
-                  name='username'
-                  label='Username'
-                  value={values.username}
+                  id='email'
+                  name='email'
+                  label='Email'
+                  value={values.email}
                   onChange={handleChange}
-                  error={touched.username && Boolean(errors.username)}
-                  helperText={touched.username && errors.username}
+                  error={touched.email && Boolean(errors.email)}
+                  helperText={touched.email && errors.email}
                 />
                 <TextField
                   style={{ marginBottom: "32px" }}

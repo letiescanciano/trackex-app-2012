@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toDate } from "date-fns";
 import styled from "styled-components";
 
 import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
@@ -17,7 +16,7 @@ import { transactionsAPI } from "../../../services/transactions";
 
 import { TransactionDrawer } from "../../Drawer";
 
-import { TrackexContext } from "../../../trackexContext";
+import { TrackexContext } from "../../../contexts/trackexContext";
 const Table = styled.table`
   width: 80%;
   text-align: left;

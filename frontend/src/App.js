@@ -3,9 +3,11 @@ import { MuiThemeProvider, createMuiTheme } from "@material-ui/core/styles";
 import "./App.css";
 import { NavBar } from "./components/NavBar";
 import { TransactionsList } from "./components/Transactions/List";
-import { TrackexProvider } from "./trackexContext";
+import { TrackexProvider } from "./contexts/trackexContext";
+import { AuthProvider } from "./contexts/AuthContext/index";
 // import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 import { Login } from "./components/Auth/Login";
+import { Signup } from "./components/Auth/Signup";
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -54,21 +56,23 @@ const theme = createMuiTheme({
 // });
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(undefined);
-  console.log("currentUser", currentUser);
+  const currentUser = false;
   return (
-    <TrackexProvider>
-      <MuiThemeProvider theme={theme}>
-        {currentUser ? (
-          <div className='layout'>
-            <NavBar />
-            <TransactionsList />
-          </div>
-        ) : (
-          <Login setCurrentUser={setCurrentUser} />
-        )}
-      </MuiThemeProvider>
-    </TrackexProvider>
+    <AuthProvider>
+      <TrackexProvider>
+        <MuiThemeProvider theme={theme}>
+          {currentUser ? (
+            <div className='layout'>
+              <NavBar />
+              <TransactionsList />
+            </div>
+          ) : (
+            // <Signup />
+            <Login />
+          )}
+        </MuiThemeProvider>
+      </TrackexProvider>
+    </AuthProvider>
   );
 }
 
