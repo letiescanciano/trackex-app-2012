@@ -36,6 +36,10 @@ const Login = () => {
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        user.getIdToken().then((token) => {
+          console.log("token", token);
+          localStorage.setItem("token", token);
+        });
         console.log(user);
         setUser(user);
       })
@@ -92,7 +96,7 @@ const Login = () => {
                   Log in
                 </Button>
               </Form>
-              <Debug />
+              {/* <Debug /> */}
             </>
           );
         }}

@@ -28,7 +28,7 @@ const AppRoutes = () => {
   return (
     <Router>
       <Switch>
-        <Route path='/' component={Login} />
+        <Route exact path='/' component={Login} />
         <Route path='/signup' component={Signup} />
       </Switch>
     </Router>

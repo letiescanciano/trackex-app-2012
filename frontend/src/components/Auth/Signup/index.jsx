@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import styled from "styled-components";
+import { useHistory } from "react-router-dom";
 
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
@@ -33,10 +34,21 @@ const Signup = () => {
     password: Yup.string().required("Required field"),
   });
 
+  const history = useHistory();
   const { setUser } = useContext(AuthContext);
   const handleSubmit = (values) => {
     console.log("values", values);
-    const { email, password } = values;
+    try {
+      const { status, data } = await authAPI.signup(values);
+      if (status === 200) {
+        setUser(user);
+        history.push("/");
+      } else {
+        console.log(err);
+      }
+    } catch (err) {
+      console.log(err);
+    }
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
@@ -44,7 +56,7 @@ const Signup = () => {
         // Signed in
         const user = userCredential.user;
         console.log("user", user);
-        setUser(user);
+
         // ...
       })
       .catch((error) => {

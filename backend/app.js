@@ -1,16 +1,13 @@
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
-const low = require("lowdb");
 const cors = require("cors");
-const lodashId = require("lodash-id");
-const FileSync = require("lowdb/adapters/FileSync");
-const adapter = new FileSync("db.json");
-const db = low(adapter);
-const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
-db._.mixin(lodashId);
-db.defaults({ transactions: [] }).write();
-
+const firebase = require("./config/firebase");
+console.log(firebase);
+const User = require("./models/User");
 const corsOptions = {
   origin: "http://localhost:3000",
 };
@@ -18,99 +15,103 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(express.json()); // for parsing application/json
-app.get("/transactions", (req, res) => {
-  const transactions = db.get("transactions").value();
-  console.log("transactions", transactions);
-  res.status(200).send(transactions);
-});
 
-app.post("/transactions", (req, res) => {
-  console.log("req.body", req.body);
-  const { name, date, amount, category, type } = req.body;
+mongoose
+  .connect(process.env.DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then((x) => {
+    console.log(`Connected to Mongo! Database name: ${x.connections[0].name}`);
+  })
+  .catch((err) => console.log(err));
 
-  const newTransaction = {
-    name,
-    date,
-    amount,
-    category,
-    type,
-    created_at: new Date(),
-    updated_at: new Date(),
-  };
-  const createdTransacion = db
-    .get("transactions")
-    .insert(newTransaction)
-    .write();
-  res.status(201).json(createdTransacion);
-});
-
-app.put("/transactions/:id", (req, res) => {
-  const { id } = req.params;
-  console.log("req.body,", req.body);
-  const { name, date, amount, category, type } = req.body;
-  const updatedTransaction = db
-    .get("transactions")
-    .updateById(id, {
-      name,
-      date,
-      amount,
-      category,
-      type,
-      updated_at: new Date(),
-    })
-    .write();
-  if (updatedTransaction) {
-    res.status(200).json(updatedTransaction);
-  } else {
-    res.status(404).json({ message: "Resource not found" });
-  }
-});
-
-app.delete("/transactions/:id", (req, res) => {
-  const { id } = req.params;
-  const deletedTransaction = db.get("transactions").removeById(id).write();
-  if (deletedTransaction) {
-    res.status(200).json(deletedTransaction);
-  } else {
-    res.status(404).json({ message: "Resource not found" });
-  }
-});
-
-const allUsers = [
-  {
-    username: "leti",
-    password: "leti1",
-  },
-  {
-    username: "eli",
-    password: "eli1",
-  },
-  {
-    username: "xani",
-    password: "xani1",
-  },
-];
-
-const accessTokenSecret = "trackexaccesstoken";
-const refreshTokenSecret = "trackexrefreshtoken";
-
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-
-  const user = allUsers.find(
-    (user) => user.username === username && user.password === password
-  );
-  if (user) {
-    //generate access token
-    const accessToken = jwt.sign({ username: username }, accessTokenSecret, {
-      expiresIn: "30m",
+app.post("/signup", async (req, res) => {
+  const { email, password } = req.body;
+  console.log("email", email);
+  console.log("password", password);
+  try {
+    // Create user in Firebase
+    const firebaseUser = await firebase.app
+      .auth()
+      .createUserWithEmailAndPassword(email, password);
+    console.log("firebaseUser", firebaseUser);
+    // Create user in our DB (and include firebaseId)
+    const dbUser = await User.create({
+      email: email,
+      firebaseId: firebaseUser.user.uid,
     });
-    const refreshToken = jwt.sign({ username: username }, refreshTokenSecret);
-    console.log("accessToken", accessToken);
-    console.log("refreshToken", refreshToken);
-    res.status(200).json({ accessToken, refreshToken });
-  } else {
-    res.status(401).json("User not found");
+    console.log("dbUser", dbUser);
+
+    if (dbUser) {
+      res.status(200).json(firebaseUser);
+    } else {
+      res.status(404).json({ message: "Bad request" });
+    }
+  } catch (e) {
+    console.log(e);
+    res.status(500).json(e.message);
   }
+  // Return created user
 });
-app.listen(3001, () => console.log("Server listening on port 3001!"));
+// app.get("/transactions", (req, res) => {
+//   const transactions = db.get("transactions").value();
+//   console.log("transactions", transactions);
+//   res.status(200).send(transactions);
+// });
+
+// app.post("/transactions", (req, res) => {
+//   console.log("req.body", req.body);
+//   const { name, date, amount, category, type } = req.body;
+
+//   const newTransaction = {
+//     name,
+//     date,
+//     amount,
+//     category,
+//     type,
+//     created_at: new Date(),
+//     updated_at: new Date(),
+//   };
+//   const createdTransacion = db
+//     .get("transactions")
+//     .insert(newTransaction)
+//     .write();
+//   res.status(201).json(createdTransacion);
+// });
+
+// app.put("/transactions/:id", (req, res) => {
+//   const { id } = req.params;
+//   console.log("req.body,", req.body);
+//   const { name, date, amount, category, type } = req.body;
+//   const updatedTransaction = db
+//     .get("transactions")
+//     .updateById(id, {
+//       name,
+//       date,
+//       amount,
+//       category,
+//       type,
+//       updated_at: new Date(),
+//     })
+//     .write();
+//   if (updatedTransaction) {
+//     res.status(200).json(updatedTransaction);
+//   } else {
+//     res.status(404).json({ message: "Resource not found" });
+//   }
+// });
+
+// app.delete("/transactions/:id", (req, res) => {
+//   const { id } = req.params;
+//   const deletedTransaction = db.get("transactions").removeById(id).write();
+//   if (deletedTransaction) {
+//     res.status(200).json(deletedTransaction);
+//   } else {
+//     res.status(404).json({ message: "Resource not found" });
+//   }
+// });
+
+app.listen(process.env.PORT || 3002, () =>
+  console.log(`Server listening on port ${process.env.PORT}!`)
+);
