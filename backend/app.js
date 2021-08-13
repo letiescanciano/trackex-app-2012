@@ -5,9 +5,10 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 
+const decodeToken = require("./middlewares/auth");
 const firebase = require("./config/firebase");
-console.log(firebase);
 const User = require("./models/User");
+const Transaction = require("./models/Transaction");
 const corsOptions = {
   origin: "http://localhost:3000",
 };
@@ -54,31 +55,42 @@ app.post("/signup", async (req, res) => {
   }
   // Return created user
 });
-// app.get("/transactions", (req, res) => {
-//   const transactions = db.get("transactions").value();
-//   console.log("transactions", transactions);
-//   res.status(200).send(transactions);
-// });
 
-// app.post("/transactions", (req, res) => {
-//   console.log("req.body", req.body);
-//   const { name, date, amount, category, type } = req.body;
+app.use(decodeToken);
+app.get("/transactions", async (req, res) => {
+  try {
+    const user = await User.findOne({ firebaseId: req.user.uid });
+    const transactions = await Transaction.find({ userId: user._id });
 
-//   const newTransaction = {
-//     name,
-//     date,
-//     amount,
-//     category,
-//     type,
-//     created_at: new Date(),
-//     updated_at: new Date(),
-//   };
-//   const createdTransacion = db
-//     .get("transactions")
-//     .insert(newTransaction)
-//     .write();
-//   res.status(201).json(createdTransacion);
-// });
+    res.status(200).json(transactions);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.post("/transactions", async (req, res) => {
+  console.log("req.body", req.body);
+  const { name, date, amount, category, type } = req.body;
+  const user = await User.findOne({ firebaseId: req.user.uid });
+
+  const newTransaction = {
+    name,
+    date,
+    amount,
+    category,
+    type,
+    userId: user._id,
+  };
+  try {
+    const createdTransaction = await Transaction.create(newTransaction);
+    console.log(createdTransaction);
+    if (createdTransaction) {
+      res.status(201).json(createdTransaction);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
 
 // app.put("/transactions/:id", (req, res) => {
 //   const { id } = req.params;

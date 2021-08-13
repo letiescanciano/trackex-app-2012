@@ -11,14 +11,16 @@ import Button from "@material-ui/core/Button";
 
 import firebase from "../../../contexts/AuthContext/firebaseConfig";
 import { AuthContext } from "../../../contexts/AuthContext";
+import { authAPI } from "../../../services/auth";
 
 const Container = styled.div`
   display: flex;
-  width: 80%;
+  width: 100%;
   flex-direction: column;
   align-items: center;
   padding: 64px;
   background-color: #252f3d;
+  height: 100vh;
 `;
 
 const FieldsWrapper = styled.div`
@@ -36,35 +38,20 @@ const Signup = () => {
 
   const history = useHistory();
   const { setUser } = useContext(AuthContext);
-  const handleSubmit = (values) => {
+  const handleSubmit = async (values) => {
     console.log("values", values);
     try {
       const { status, data } = await authAPI.signup(values);
+      console.log("data", data);
       if (status === 200) {
-        setUser(user);
+        setUser(data);
         history.push("/");
       } else {
-        console.log(err);
+        console.log(data);
       }
     } catch (err) {
       console.log(err);
     }
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log("user", user);
-
-        // ...
-      })
-      .catch((error) => {
-        console.log(error.message);
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // ..
-      });
   };
   return (
     <Container>
@@ -114,7 +101,7 @@ const Signup = () => {
                   Create account
                 </Button>
               </Form>
-              <Debug />
+              {/* <Debug /> */}
             </>
           );
         }}
