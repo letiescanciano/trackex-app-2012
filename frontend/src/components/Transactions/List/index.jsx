@@ -95,8 +95,8 @@ const TransactionsList = () => {
 
   const ctx = React.useContext(TrackexContext);
   const [categories, setCategories] = useState(
-    ctx.categories.reduce((acc, category) => {
-      acc[category.value] = { label: category.label, checked: false };
+    Object.keys(ctx.categories).reduce((acc, category) => {
+      acc[category] = { label: ctx.categories[category], checked: false };
       return acc;
     }, {})
   );
@@ -106,8 +106,8 @@ const TransactionsList = () => {
   //   clothes: { label: 'label1', checked: true},
   // }
   const [types, setTypes] = useState(
-    ctx.types.reduce((acc, type) => {
-      acc[type.value] = { label: type.label, checked: false };
+    Object.keys(ctx.types).reduce((acc, type) => {
+      acc[type] = { label: ctx.types[type], checked: false };
       return acc;
     }, {})
   );
@@ -154,7 +154,7 @@ const TransactionsList = () => {
       console.log("status", status);
       if (status === 200) {
         const _transactions = [...transactions].filter(
-          (transaction) => transaction.id !== id
+          (transaction) => transaction._id !== id
         );
         setTransactions(_transactions);
       }
@@ -170,13 +170,13 @@ const TransactionsList = () => {
     setMode("edit");
     // 2. I need to find the selected transaction in my transactions array
     const foundTransaction = transactions.find((transaction) => {
-      return transaction.id === id;
+      return transaction._id === id;
     });
     // 3. I need to setSelectedTransaction to the one I found (save it in my state)
     setSelectedTransaction({
       ...foundTransaction,
-      type: foundTransaction.type.value,
-      category: foundTransaction.category.value,
+      type: foundTransaction.type,
+      category: foundTransaction.category,
     });
     // 4. open the drawer and fill out the form with the transaction data
     setOpenDrawer(true);
@@ -205,17 +205,9 @@ const TransactionsList = () => {
 
   const editTransaction = async (transaction) => {
     console.log("transaction", transaction);
-    const updatedTransaction = {
-      ...transaction,
-      category: ctx.categories.find(
-        (cat) => cat.value === transaction.category
-      ),
-      type: ctx.types.find((cat) => cat.value === transaction.type),
-    };
-    console.log("updatedTransaction", updatedTransaction);
 
     try {
-      const { data, status } = await transactionsAPI.update(updatedTransaction);
+      const { data, status } = await transactionsAPI.update(transaction);
       console.log("data", data);
       console.log("status", status);
       if (status === 200) {
@@ -386,27 +378,29 @@ const TransactionsList = () => {
             </thead>
             <tbody>
               {filteredTransactions.map(
-                ({ id, date, name, category, type, amount }) => {
+                ({ _id, date, name, category, type, amount }) => {
                   return (
-                    <tr key={id}>
-                      <TableCell>{date}</TableCell>
-                      <TableCell>{name}</TableCell>
-                      <TableCell>{category.value}</TableCell>
+                    <tr key={_id}>
                       <TableCell>
-                        <Amount type={type.value}>
-                          {formatter.format(amount)}
-                        </Amount>
+                        {new Intl.DateTimeFormat("en-US").format(
+                          new Date(date)
+                        )}
+                      </TableCell>
+                      <TableCell>{name}</TableCell>
+                      <TableCell>{ctx.categories[category]}</TableCell>
+                      <TableCell>
+                        <Amount type={type}>{formatter.format(amount)}</Amount>
                       </TableCell>
                       <TableCell>
                         <EditIcon
                           style={{ marginRight: "16px" }}
                           onClick={() => {
-                            handleEdit(id);
+                            handleEdit(_id);
                           }}
                         />
                         <DeleteForeverIcon
                           style={{ color: "#FF7661" }}
-                          onClick={() => handleDelete(id)}
+                          onClick={() => handleDelete(_id)}
                         />
                       </TableCell>
                     </tr>

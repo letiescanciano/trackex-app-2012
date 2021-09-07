@@ -1,10 +1,7 @@
-const low = require("lowdb");
-const FileSync = require("lowdb/adapters/FileSync");
-const adapter = new FileSync("db.json");
-const db = low(adapter);
-const lodashId = require("lodash-id");
+require("dotenv").config();
 
-db._.mixin(lodashId);
+const mongoose = require("mongoose");
+const Transaction = require("./models/Transaction");
 const strapiData = [
   {
     id: 2,
@@ -698,28 +695,37 @@ const strapiData = [
   },
 ];
 
-db.defaults({ transactions: [] }).write();
-
-strapiData.forEach((transaction) => {
-  if (transaction.category.value && transaction.type.value) {
-    db.get("transactions")
-      .insert({
-        name: transaction.name,
-        date: transaction.date,
-        amount: transaction.amount,
-        category: {
-          id: transaction.category.id,
-          value: transaction.category.value,
-          label: transaction.category.label,
-        },
-        type: {
-          id: transaction.type.id,
-          value: transaction.type.value,
-          label: transaction.type.label,
-        },
-        created_at: new Date(),
-        updated_at: new Date(),
+mongoose
+  .connect(process.env.DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(async (x) => {
+    console.log(`Connected to Mongo! Database name: ${x.connections[0].name}`);
+    const transactions = strapiData
+      .map((transaction) => {
+        if (transaction.category.value && transaction.type.value) {
+          return {
+            name: transaction.name,
+            date: transaction.date,
+            amount: transaction.amount,
+            category: transaction.category.value,
+            type: transaction.type.value,
+            userId: mongoose.Types.ObjectId("61155506dc1dc7121634da2e"),
+          };
+        }
       })
-      .write();
-  }
-});
+      .filter((x) => x);
+    console.log(transactions);
+    try {
+      const createdTransactions = await Transaction.create(transactions);
+      console.log(createdTransactions);
+      console.log(
+        `Success! - ${createdTransactions.length} transactions created correctly for user letiapp@gmail.com`
+      );
+      mongoose.connection.close();
+    } catch (err) {
+      console.log(err);
+    }
+  })
+  .catch((err) => console.log(err));

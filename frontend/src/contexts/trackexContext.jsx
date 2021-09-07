@@ -3,19 +3,18 @@ import React from "react";
 const TrackexContext = React.createContext();
 
 const TrackexProvider = ({ children }) => {
-  const categories = [
-    { value: "eating_out", label: "Eating out", id: 1 },
-    { value: "clothes", label: "Clothes", id: 2 },
-    { value: "electronics", label: "Electronics", id: 3 },
-    { value: "groceries", label: "Groceries", id: 4 },
-    { value: "salary", label: "Salary", id: 5 },
-  ];
+  const categories = {
+    eating_out: "Eating out",
+    clothes: "Clothes",
+    electronics: "Electronics",
+    groceries: "Groceries",
+    salary: "Salary",
+  };
 
-  const types = [
-    { value: "expense", label: "Expense", id: 1 },
-    { value: "income", label: "Income", id: 2 },
-  ];
-
+  const types = {
+    expense: "Expense",
+    income: "Income",
+  };
   return (
     <TrackexContext.Provider value={{ categories, types }}>
       {children}

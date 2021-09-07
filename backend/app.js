@@ -92,37 +92,40 @@ app.post("/transactions", async (req, res) => {
   }
 });
 
-// app.put("/transactions/:id", (req, res) => {
-//   const { id } = req.params;
-//   console.log("req.body,", req.body);
-//   const { name, date, amount, category, type } = req.body;
-//   const updatedTransaction = db
-//     .get("transactions")
-//     .updateById(id, {
-//       name,
-//       date,
-//       amount,
-//       category,
-//       type,
-//       updated_at: new Date(),
-//     })
-//     .write();
-//   if (updatedTransaction) {
-//     res.status(200).json(updatedTransaction);
-//   } else {
-//     res.status(404).json({ message: "Resource not found" });
-//   }
-// });
+app.put("/transactions/:id", async (req, res) => {
+  const { id } = req.params;
+  console.log("req.body,", req.body);
+  try {
+    const updatedTransaction = await Transaction.findByIdAndUpdate(
+      id,
+      {
+        ...req.body,
+      },
+      { new: true }
+    );
+    if (updatedTransaction) {
+      res.status(200).json(updatedTransaction);
+    } else {
+      res.status(404).json({ message: "Resource not found" });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+});
 
-// app.delete("/transactions/:id", (req, res) => {
-//   const { id } = req.params;
-//   const deletedTransaction = db.get("transactions").removeById(id).write();
-//   if (deletedTransaction) {
-//     res.status(200).json(deletedTransaction);
-//   } else {
-//     res.status(404).json({ message: "Resource not found" });
-//   }
-// });
+app.delete("/transactions/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deletedTransaction = await Transaction.findByIdAndDelete(id);
+    if (deletedTransaction) {
+      res.status(200).json(deletedTransaction);
+    } else {
+      res.status(404).json({ message: "Resource not found" });
+    }
+  } catch (e) {
+    console.log(err);
+  }
+});
 
 app.listen(process.env.PORT || 3002, () =>
   console.log(`Server listening on port ${process.env.PORT}!`)

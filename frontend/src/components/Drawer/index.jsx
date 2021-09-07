@@ -126,11 +126,11 @@ const TransactionDrawer = (props) => {
                       value={values.category}
                       onChange={handleChange}
                     >
-                      {categories.map((category) => (
+                      {Object.keys(categories).map((category) => (
                         <FormControlLabel
-                          value={category.value}
+                          value={category}
                           control={<Radio />}
-                          label={category.label}
+                          label={categories[category]}
                         />
                       ))}
                     </RadioGroup>
@@ -143,11 +143,11 @@ const TransactionDrawer = (props) => {
                       value={values.type}
                       onChange={handleChange}
                     >
-                      {types.map(({ value, label }) => (
+                      {Object.keys(types).map((type) => (
                         <FormControlLabel
-                          value={value}
+                          value={type}
                           control={<Radio />}
-                          label={label}
+                          label={types[type]}
                         />
                       ))}
                     </RadioGroup>
